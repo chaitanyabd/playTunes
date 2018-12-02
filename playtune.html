@@ -1,0 +1,312 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <!-- 
+    Built for you with ❤ by Chaitanya Dhareshwar cd@infinitybeam.io
+    -->
+    <title>Infinity Beam - Plug-n-Play IoT for the common man</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <style>
+        BODY {
+            background: linear-gradient(#FFFFFFF0, #FFFFFFF0), url('/img/bg.png') !important;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        var B0 = 31;
+        var C1 = 33;
+        var CS1 = 35;
+        var D1 = 37;
+        var DS1 = 39;
+        var E1 = 41;
+        var F1 = 44;
+        var FS1 = 46;
+        var G1 = 49;
+        var GS1 = 52;
+        var A1 = 55;
+        var AS1 = 58;
+        var B1 = 62;
+        var C2 = 65;
+        var CS2 = 69;
+        var D2 = 73;
+        var DS2 = 78;
+        var E2 = 82;
+        var F2 = 87;
+        var FS2 = 93;
+        var G2 = 98;
+        var GS2 = 104;
+        var A2 = 110;
+        var AS2 = 117;
+        var B2 = 123;
+        var C3 = 131;
+        var CS3 = 139;
+        var D3 = 147;
+        var DS3 = 156;
+        var E3 = 165;
+        var F3 = 175;
+        var FS3 = 185;
+        var G3 = 196;
+        var GS3 = 208;
+        var A3 = 220;
+        var AS3 = 233;
+        var B3 = 247;
+        var C4 = 262;
+        var CS4 = 277;
+        var D4 = 294;
+        var DS4 = 311;
+        var E4 = 330;
+        var F4 = 349;
+        var FS4 = 370;
+        var G4 = 392;
+        var GS4 = 415;
+        var A4 = 440;
+        var AS4 = 466;
+        var B4 = 494;
+        var C5 = 523;
+        var CS5 = 554;
+        var D5 = 587;
+        var DS5 = 622;
+        var E5 = 659;
+        var F5 = 698;
+        var FS5 = 740;
+        var G5 = 784;
+        var GS5 = 831;
+        var A5 = 880;
+        var AS5 = 932;
+        var B5 = 988;
+        var C6 = 1047;
+        var CS6 = 1109;
+        var D6 = 1175;
+        var DS6 = 1245;
+        var E6 = 1319;
+        var F6 = 1397;
+        var FS6 = 1480;
+        var G6 = 1568;
+        var GS6 = 1661;
+        var A6 = 1760;
+        var AS6 = 1865;
+        var B6 = 1976;
+        var C7 = 2093;
+        var CS7 = 2217;
+        var D7 = 2349;
+        var DS7 = 2489;
+        var E7 = 2637;
+        var F7 = 2794;
+        var FS7 = 2960;
+        var G7 = 3136;
+        var GS7 = 3322;
+        var A7 = 3520;
+        var AS7 = 3729;
+        var B7 = 3951;
+        var C8 = 4186;
+        var CS8 = 4435;
+        var D8 = 4699;
+        var DS8 = 4978;
+
+        //Mario main theme melody
+        var melody = [];
+        //Mario main them tempo
+        var noteDurations = [];
+
+
+        var audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+        var oscillator;
+
+        var thisNote = 0;
+
+        var previousToneMillis = 0;
+        var outputTone = false;
+
+        function handlebeepies() {
+            var currentMillis = new Date().getTime();
+
+            var noteDuration = 1000 / noteDurations[thisNote];
+            var pauseBetweenNotes = noteDuration * 1.30;
+
+            if (outputTone) {
+                // We are currently outputting a tone
+                // Check if it's been long enough and turn off if so
+                if (currentMillis - previousToneMillis >= noteDuration) {
+                    previousToneMillis = currentMillis;
+                    // noTone(tonePin);
+                    if (oscillator) oscillator.stop();
+                    outputTone = false;
+                    thisNote++;
+                    if (thisNote > noteDurations.length - 1) stopAll();
+                }
+            }
+            else {
+                // We are currently in a pause
+                // Check if it's been long enough and turn on if so
+                if (currentMillis - previousToneMillis >= pauseBetweenNotes) {
+                    $("#note").text("Index " + thisNote + ", Note " + melodyNames[thisNote]);
+                    $("#proggy").width(Math.ceil(thisNote * 100 / (noteDurations.length - 1)) + "%");
+                    previousToneMillis = currentMillis;
+                    oscillator = audioCtx.createOscillator();
+                    oscillator.type = 'square';
+                    oscillator.frequency.value = melody[thisNote];
+                    oscillator.connect(audioCtx.destination);
+                    oscillator.start();
+                    outputTone = true;
+                }
+            }
+
+
+        }
+
+        setInterval(handlebeepies, 10);
+
+        var melodyNames = [];
+
+        function parseNotes() {
+            var m = $("#melody").val();
+            m = m.replace(/NOTE_/ig, "");
+            melodyNames = m.replace(/\s/ig, "").split(",");
+            var tmpMelody = [];
+            try {
+                tmpMelody = eval("[" + m + "]");
+            }
+            catch (e) { alert("Could not parse Melodies"); return; }
+            var n = $("#noteDuration").val();
+            var tmpNoteDurations = [];
+            try {
+                tmpNoteDurations = eval("[" + n + "]");
+            }
+            catch (e) { alert("Could not parse Durations"); return; }
+            if (tmpMelody.length != tmpNoteDurations.length) {
+                alert("Melodies and Note Durations length must be the same.\nNotes = " + tmpMelody.length + ", but Durations = " + tmpNoteDurations.length + "\nNot updating/playing tune");
+                return false;
+            }
+            melody = tmpMelody;
+            noteDurations = tmpNoteDurations;
+            try {
+                if (oscillator) oscillator.stop();
+            }
+            catch (e) {}
+            outputTone = false;
+            thisNote = 0;
+        }
+
+        function stopAll() {
+            try {
+                if (oscillator) oscillator.stop();
+            }
+            catch (e) {}
+            outputTone = false;
+            thisNote = 0;
+            melody = [];
+            noteDurations = [];
+        }
+    </script>
+
+    <div class="container white" style="padding:5px;">
+        <div class="row">
+            <div class="col m12">
+                <a href="#" class="right">Video Guide: How to use this Tool</a> Last Note:
+                <div id="note">-</div>
+            </div>
+            <div class="col m12">
+                <div class="progress">
+                    <div class="determinate" id="proggy" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="col m6">
+                Melodies <br>
+                <textarea style="min-height:50vh;" id="melody" placeholder="Notes">
+C3, D3, E3, F3, G3, A3, B3,
+C4, D4, E4, F4, G4, A4, B4,
+C5, D5, E5, F5, G5, A5, B5,C6
+</textarea>
+            </div>
+            <div class="col m6">
+                Tempo<br>
+                <textarea style="min-height:50vh;" id="noteDuration" placeholder="Durations">8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,6</textarea>
+            </div>
+
+            <div class="col s12">
+                <button class="btn blue darken-3" onclick="parseNotes();"><i class="left material-icons">play_arrow</i> Parse &amp; Start</button>
+                <button class="btn red darken-3" onclick="stopAll()"><i class="left material-icons">stop</i> Stop</button>
+                <div class="right">
+                    <a target="_blank" href="https://www.arduino.cc/en/Tutorial/toneMelody">ToneMelody Tutorial</a> |
+                    <a href="https://infinitybeam.io/download/pitches.h" download>Download "pitches.h"</a> |
+                    <a href="javascript:downloadArrays()">Download C Arrays</a>
+                </div>
+                <script>
+                    window.downloadArrays = function() {
+                        var textToSave = "int melody[] = { " + $("#melody").val() + " };\n" +
+                            "int noteDurations[] = {" + $("#noteDuration").val() + "};";
+
+                        var hiddenElement = document.createElement('a');
+
+                        hiddenElement.href = 'data:attachment/text,' + encodeURI(textToSave);
+                        hiddenElement.target = '_blank';
+                        hiddenElement.download = 'ToneMelodyVariables.c';
+                        hiddenElement.click();
+                    };
+                </script>
+            </div>
+
+            <div class="col s12">
+
+                <br/>
+                <h3>Samples</h3>
+                <b>Mario Theme</b> - credits to http://www.linuxcircle.com/2013/03/31/playing-mario-bros-tune-with-arduino-and-piezo-buzzer/
+                <br/> Melody =
+                <code>
+            E5, E5, 0, E5, 0, C5, E5, 0, G5, 0, 0, 0, G4, 0, 0, 0, 
+            C5, 0, 0, G4, 0, 0, E4, 0, 0, A4, 0, B4, 0, AS4, A4, 0, 
+            G4, E5, G5, A5, 0, F5, G5, 0, E5, 0, C5, D5, B4, 0, 0, 
+            C5, 0, 0, G4, 0, 0, E4, 0, 0, A4, 0, B4, 0, AS4, A4, 0, 
+            G4, E5, G5, A5, 0, F5, G5, 0, E5, 0, C5, D5, B4, 0, 0
+        </code>
+                <Br/>
+                <br/> Durations =
+                <code>
+            12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 
+        12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 
+        12, 12, 12, 9, 9, 9, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 
+        12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 
+        12, 12, 12, 9, 9, 9, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12</code>
+                <br/>
+                <Br/>
+                <b>Twinkle Twinkle little star</b> - credits to http://abcnotation.com/tunePage?a=thesession.org/tunes/6151.no-ext/0002
+                <br/> Melody = <code>C4,C4,G4,G4,A4,A4,G4,0,F4,F4,E4,E4,D4,D4,C4,0,
+G4,G4,F4,F4,E4,E4,D4,0,G4,G4,F4,F4,E4,E4,D4,0,
+C4,C4,G4,G4,A4,A4,G4,0,F4,F4,E4,E4,D4,D4,C4,0</code>
+                <Br/>
+                <br/> Durations =
+                <code>
+8,8,8,8,8,8,6,8,8,8,8,8,8,8,6,8,
+8,8,8,8,8,8,6,8,8,8,8,8,8,8,6,8,
+8,8,8,8,8,8,6,8,8,8,8,8,8,8,6,8
+        </code>
+
+            </div>
+        </div>
+
+
+    </div>
+
+
+    <footer class="white" style="margin-top:100px;">
+        <div class="row" style="margin-bottom:0px; padding:13px;">
+            <div class="col m6 s12">Infinty Beam is an experimental IoT Platform</div>
+        </div>
+    </footer>
+
+</body>
+
+</html>
